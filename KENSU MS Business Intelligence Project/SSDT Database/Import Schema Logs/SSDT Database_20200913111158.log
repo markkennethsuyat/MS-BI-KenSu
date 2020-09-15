@@ -1,0 +1,84 @@
+14/09/2020 7:11:58 am	This log contains information about the import schema operation into project 'SSDT Database' on computer 'KENSU' by user 'Mark Kenneth Suyat'.
+14/09/2020 7:11:59 am	Import of database schema has started.
+14/09/2020 7:12:06 am	Gathering database credentials
+14/09/2020 7:12:06 am	Gathering database options
+14/09/2020 7:12:06 am	Gathering users
+14/09/2020 7:12:06 am	Gathering roles
+14/09/2020 7:12:06 am	Gathering application roles
+14/09/2020 7:12:06 am	Gathering role memberships
+14/09/2020 7:12:06 am	Gathering filegroups
+14/09/2020 7:12:06 am	Gathering full-text catalogs
+14/09/2020 7:12:06 am	Gathering assemblies
+14/09/2020 7:12:06 am	Gathering certificates
+14/09/2020 7:12:06 am	Gathering asymmetric keys
+14/09/2020 7:12:06 am	Gathering symmetric keys
+14/09/2020 7:12:06 am	Gathering encrypted symmetric keys
+14/09/2020 7:12:06 am	Gathering schemas
+14/09/2020 7:12:06 am	Gathering XML schema collections
+14/09/2020 7:12:06 am	Gathering user-defined data types
+14/09/2020 7:12:06 am	Gathering user-defined types
+14/09/2020 7:12:06 am	Gathering table types
+14/09/2020 7:12:06 am	Gathering unique keys for table types
+14/09/2020 7:12:06 am	Gathering primary keys for table types
+14/09/2020 7:12:06 am	Gathering indexes for table types
+14/09/2020 7:12:06 am	Gathering check constraints for table types
+14/09/2020 7:12:06 am	Gathering default constraints for table types
+14/09/2020 7:12:06 am	Gathering partition functions
+14/09/2020 7:12:06 am	Gathering partition schemes
+14/09/2020 7:12:06 am	Gathering functions
+14/09/2020 7:12:06 am	Gathering encrypted functions
+14/09/2020 7:12:06 am	Gathering aggregates
+14/09/2020 7:12:06 am	Gathering procedures
+14/09/2020 7:12:06 am	Gathering encrypted procedures
+14/09/2020 7:12:06 am	Gathering tables
+14/09/2020 7:12:06 am	Gathering primary keys
+14/09/2020 7:12:06 am	Gathering unique constraints
+14/09/2020 7:12:06 am	Gathering foreign keys
+14/09/2020 7:12:06 am	Gathering default constraints
+14/09/2020 7:12:06 am	Gathering check constraints
+14/09/2020 7:12:06 am	Gathering views
+14/09/2020 7:12:07 am	Gathering encrypted views
+14/09/2020 7:12:07 am	Gathering indexes
+14/09/2020 7:12:07 am	Gathering statistics
+14/09/2020 7:12:07 am	Gathering full-text index stoplists
+14/09/2020 7:12:07 am	Gathering search property lists
+14/09/2020 7:12:07 am	Gathering search properties
+14/09/2020 7:12:07 am	Gathering full-text indexes
+14/09/2020 7:12:07 am	Gathering column store indexes
+14/09/2020 7:12:07 am	Gathering spatial indexes
+14/09/2020 7:12:07 am	Gathering XML indexes
+14/09/2020 7:12:07 am	Gathering Selective XML indexes
+14/09/2020 7:12:07 am	Gathering encrypted triggers
+14/09/2020 7:12:07 am	Gathering triggers
+14/09/2020 7:12:07 am	Gathering encrypted and clr ddl triggers
+14/09/2020 7:12:07 am	Gathering ddl triggers
+14/09/2020 7:12:07 am	Gathering synonyms
+14/09/2020 7:12:07 am	Gathering defaults
+14/09/2020 7:12:07 am	Gathering data constraint uddt bindings
+14/09/2020 7:12:07 am	Gathering rules
+14/09/2020 7:12:07 am	Gathering data constraint uddt bindings
+14/09/2020 7:12:07 am	Gathering message types
+14/09/2020 7:12:07 am	Gathering queues
+14/09/2020 7:12:07 am	Gathering contracts
+14/09/2020 7:12:07 am	Gathering services
+14/09/2020 7:12:07 am	Gathering event notifications
+14/09/2020 7:12:07 am	Gathering remote service bindings
+14/09/2020 7:12:07 am	Gathering broker priorities
+14/09/2020 7:12:07 am	Gathering signatures
+14/09/2020 7:12:07 am	Gathering data compression options
+14/09/2020 7:12:07 am	Gathering sequence types
+14/09/2020 7:12:07 am	Gathering security policies
+14/09/2020 7:12:07 am	Gather column encryption keys
+14/09/2020 7:12:07 am	Gathering column master keys
+14/09/2020 7:12:07 am	Gathering external data sources
+14/09/2020 7:12:07 am	Gathering external file formats
+14/09/2020 7:12:07 am	Gathering external tables
+14/09/2020 7:12:07 am	Gathering extended properties
+14/09/2020 7:12:08 am	Gathering credentials
+14/09/2020 7:12:08 am	Gathering logins
+14/09/2020 7:12:08 am	Gathering server audits
+14/09/2020 7:12:08 am	Scanning project for duplicate elements
+14/09/2020 7:12:09 am	Finished duplicate element processing
+14/09/2020 7:12:11 am	Finished importing database.
+14/09/2020 7:12:11 am	A summary of the import was saved to the following location: D:\myProjects\KENSU\KENSU MS Business Intelligence Project\SSDT Database\Import Schema Logs\SSDT Database_20200913111158.log
+14/09/2020 7:12:11 am	Click Finish to continue...

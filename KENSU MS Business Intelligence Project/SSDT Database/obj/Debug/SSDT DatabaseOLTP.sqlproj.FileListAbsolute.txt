@@ -1,0 +1,5 @@
+D:\GitHubRepo\KENSU MS Business Intelligence Project\SSDT Database\bin\Debug\SSDT DatabaseOLTP.dacpac
+D:\GitHubRepo\KENSU MS Business Intelligence Project\SSDT Database\bin\Debug\SSDT_Database.dll
+D:\GitHubRepo\KENSU MS Business Intelligence Project\SSDT Database\bin\Debug\SSDT_Database.pdb
+D:\GitHubRepo\KENSU MS Business Intelligence Project\SSDT Database\obj\Debug\SSDT_Database.dll
+D:\GitHubRepo\KENSU MS Business Intelligence Project\SSDT Database\obj\Debug\SSDT_Database.pdb

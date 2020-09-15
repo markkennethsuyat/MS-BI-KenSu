@@ -1,0 +1,1275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report MustUnderstand="df" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:df="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition/defaultfontfamily">
+  <Description>A view of the Report Server permissions by group</Description>
+  <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
+  <Author>Anthony Duguid</Author>
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="ReportServer">
+      <DataSourceReference>ReportServer</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>aca78ae1-0619-41f5-8d87-2c2914ffe193</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="FolderPermissions">
+      <Query>
+        <DataSourceName>ReportServer</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@all_value">
+            <Value>=Parameters!all_value.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@UserName">
+            <Value>=Parameters!UserName.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@ReportFolder">
+            <Value>=Parameters!ReportFolder.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>/*
+|--------------------------------------------------------------------------------------------------
+| Purpose:		To show all the Reporting Services folder permissions
+| References:	How to create new permission groups https://www.mssqltips.com/sqlservertip/2793/sql-server-reporting-services-2012-permissions/
+|				How to query folder permissions http://stackoverflow.com/questions/16920251/sql-server-reporting-services-2008-r2-folder-and-report-security
+| Notes:		To deploy this report to the main report page, you must use "Upload File"
+|				SQLCmdMode Script
+|--------------------------------------------------------------------------------------------------
+
+DECLARE @all_value AS VARCHAR(50)
+DECLARE @UserName AS VARCHAR(50)
+DECLARE @ReportFolder AS VARCHAR(50)
+
+SET @all_value = '&lt;ALL&gt;'
+SET @UserName = '&lt;ALL&gt;'
+SET @ReportFolder = '&lt;ALL&gt;'
+
+*/
+
+
+;WITH 
+ad_users ([sam_account_name], [distinguished_name], [surname], [given_name], [display_name], [full_name], [email], [telephone], [extension], [office_location], [department]) --Cannot resolve the collation conflict between "Latin1_General_100_CI_AS_KS_WS" and "Latin1_General_CI_AS" in the equal to operation.
+AS 
+(
+	SELECT 
+		  [sam_account_name] = UPPER(adu.[sam_account_name]) Collate Latin1_General_CI_AS
+		, adu.[distinguished_name] Collate Latin1_General_CI_AS
+		, adu.[surname] Collate Latin1_General_CI_AS
+		, adu.[given_name] Collate Latin1_General_CI_AS
+		, adu.[display_name] Collate Latin1_General_CI_AS
+		, adu.[full_name] Collate Latin1_General_CI_AS
+		, adu.[email] Collate Latin1_General_CI_AS
+		, adu.[telephone] Collate Latin1_General_CI_AS
+		, adu.[extension] Collate Latin1_General_CI_AS
+		, adu.[office_location] Collate Latin1_General_CI_AS
+		, adu.[department] Collate Latin1_General_CI_AS
+	FROM 
+		[ACTIVE_DIRECTORY].[ad].[ad_staff] adu
+)
+,
+role_names
+AS
+(
+	SELECT tbl.* FROM (VALUES
+	  ( 'Browser')
+	, ( 'Content Manager')
+	, ( 'Manage Subscriptions')
+	, ( 'My Reports')
+	, ( 'NavigateFolder')
+	, ( 'Publisher')
+	, ( 'Report Builder')
+	) tbl ([RoleName]) 
+)
+,
+catalog_type_description
+AS
+(
+	SELECT tbl.* FROM (VALUES
+	  ( 1, 'Folder')
+	, ( 2, 'Report')
+	, ( 3, 'Resource')
+	, ( 4, 'Linked Report')
+	, ( 5, 'Data Source')
+	, ( 6, 'Report Model')
+	, ( 8, 'Shared Dataset')
+	, ( 9, 'Report Part')
+	) tbl ([TypeID], [TypeDescription]) 
+	WHERE TypeID = 1
+)
+, 
+nonreport_folders
+AS
+(
+	SELECT tbl.* FROM (VALUES
+	  ( 'Images')
+	, ( 'contents')
+	, ( '')
+	) tbl ([FolderName]) 
+)
+, 
+user_list
+AS
+(
+	SELECT
+		  usr.[UserID]
+		, usr.[UserName]
+		, [UserNameFormat] = 
+			CASE 
+				WHEN CHARINDEX('\', usr.[UserName]) &gt; 0 THEN UPPER(SUBSTRING(usr.[UserName] ,CHARINDEX('\', usr.[UserName]) + 1, LEN(usr.[UserName])))
+				ELSE usr.[UserName]
+			END 
+	FROM 
+		ReportServer.dbo.[Users] usr
+)
+SELECT 
+	  [FolderName] = cat.[Name]
+	, [FolderPath] = cat.[Path]
+	, rol.[RoleName]
+	, [UserNameFormat] = LOWER(usr.[UserNameFormat])
+	, usr.[UserName]
+	, [UserNameUrl] = 'http://' + Host_Name() + '/Reports/manage/catalogitem/editrole/' + cat.[Path] + '?user=' + REPLACE(usr.[UserName], N'\', N'%5C') -- must escape the special character \
+	, [FolderUrl] = 'http://' + Host_Name() + '/Reports/manage/catalogitem/security' + cat.[Path]
+	, adu.[full_name]
+	, adu.[email]
+FROM 
+	ReportServer.dbo.[Catalog] cat
+	INNER JOIN catalog_type_description tpd ON cat.[Type] = tpd.[TypeID]	
+	LEFT JOIN ReportServer.dbo.[PolicyUserRole] urol ON urol.[PolicyID] = cat.[PolicyID]
+	LEFT JOIN ReportServer.dbo.[Roles] rol ON urol.[RoleID] = rol.[RoleID]
+	LEFT JOIN ReportServer.dbo.[Policies] pol ON urol.[PolicyID] = pol.[PolicyID]
+	LEFT JOIN user_list usr ON urol.[UserID] = usr.[UserID]
+	LEFT JOIN nonreport_folders nrf ON nrf.[FolderName] = cat.[Name]
+	LEFT JOIN ad_users adu ON adu.[sam_account_name] = usr.[UserNameFormat]
+WHERE 
+	1=1
+	AND nrf.[FolderName] IS NULL
+	AND (@all_value IN(@UserName) OR usr.[UserNameFormat] IN(@UserName))
+	AND (@all_value IN (@ReportFolder) OR cat.[Path] IN(@ReportFolder))
+	AND cat.[Name] NOT IN('System Resources', 'UniversalBrand', 'fbac82c8-9bad-4dba-929f-c04e7ca4111f')
+UNION
+SELECT
+	  [FolderName] = NULL
+	, [FolderPath] = NULL
+	, rol.[RoleName]
+	, [UserNameFormat] = NULL
+	, [UserName] = NULL
+	, [UserNameUrl] = NULL
+	, [FolderUrl] = NULL
+	, [full_name] = NULL
+	, [email] = NULL
+FROM 
+	role_names rol</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="FolderName">
+          <DataField>FolderName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="FolderPath">
+          <DataField>FolderPath</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="RoleName">
+          <DataField>RoleName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="UserNameFormat">
+          <DataField>UserNameFormat</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="UserName">
+          <DataField>UserName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="UserNameUrl">
+          <DataField>UserNameUrl</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="FolderUrl">
+          <DataField>FolderUrl</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="full_name">
+          <DataField>full_name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="email">
+          <DataField>email</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="Users">
+      <Query>
+        <DataSourceName>ReportServer</DataSourceName>
+        <CommandText>; WITH ad_users([sam_account_name], [full_name]) /*Cannot resolve the collation conflict between "Latin1_General_100_CI_AS_KS_WS" and "Latin1_General_CI_AS" in the equal to operation.*/ AS (SELECT        [sam_account_name] = UPPER(adu.[sam_account_name])
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                     COLLATE Latin1_General_CI_AS,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                     adu.[full_name] COLLATE Latin1_General_CI_AS
+                                                                                                                                                                                                                                                                                                                                                                                                                                           FROM            [ACTIVE_DIRECTORY].[ad].[ad_staff]
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                     adu), 
+report_users AS
+    (SELECT DISTINCT 
+                                [UserNameFormat] = CASE WHEN CHARINDEX('\', usr.[UserName]) &gt; 0 THEN UPPER(SUBSTRING(usr.[UserName], CHARINDEX('\', usr.[UserName]) + 1, LEN(usr.[UserName]))) ELSE usr.[UserName] END, usr.[UserID]
+      FROM            ReportServer.dbo.[Catalog] cat LEFT JOIN
+                                ReportServer.dbo.PolicyUserRole urol ON urol.[PolicyID] = cat.[PolicyID] LEFT JOIN
+                                ReportServer.dbo.Roles rol ON urol.[RoleID] = rol.[RoleID] LEFT JOIN
+                                ReportServer.dbo.Policies pol ON urol.[PolicyID] = pol.[PolicyID] LEFT JOIN
+                                ReportServer.dbo.[Users] usr ON urol.[UserID] = usr.[UserID])
+    SELECT        [UserName] = COALESCE (adu.[full_name], '') + ' (' + LOWER(usr.[UserNameFormat]) + ')', [UserNameFormat], [OrderNumber] = 2
+     FROM            report_users usr LEFT JOIN
+                              ad_users adu ON adu.[sam_account_name] = usr.[UserNameFormat]
+UNION
+SELECT        @all_value, @all_value, 1
+ORDER BY 3, 1</CommandText>
+      </Query>
+    </DataSet>
+    <DataSet Name="ReportFolders">
+      <Query>
+        <DataSourceName>ReportServer</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@all_value">
+            <Value>=Parameters!all_value.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>;WITH 
+catalog_type_description
+AS
+(
+	SELECT tbl.* FROM (VALUES
+	  ( 1, 'Folder')
+	, ( 2, 'Report')
+	, ( 3, 'Resource')
+	, ( 4, 'Linked Report')
+	, ( 5, 'Data Source')
+	, ( 6, 'Report Model')
+	, ( 8, 'Shared Dataset')
+	, ( 9, 'Report Part')
+	) tbl ([TypeID], [TypeDescription]) 
+	WHERE TypeID = 1
+)
+SELECT 
+	[ReportFolder] = c.Path --SUBSTRING(c.Path, 2, Len(c.Path)-Len(c.Name)-2)   
+	, [OrderNumber] = 2
+FROM 
+	ReportServer.dbo.Catalog AS c WITH (NOLOCK) 
+	INNER JOIN catalog_type_description AS ctd ON ctd.TypeID = c.[Type]
+WHERE 
+		1=1
+		AND c.[Name] NOT IN('System Resources', 'UniversalBrand', 'fbac82c8-9bad-4dba-929f-c04e7ca4111f')
+UNION 
+SELECT @all_value, 1
+ORDER BY 2, 1</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ReportFolder">
+          <DataField>ReportFolder</DataField>
+          <rd:TypeName>System.Object</rd:TypeName>
+        </Field>
+        <Field Name="OrderNumber">
+          <DataField>OrderNumber</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="PermissionKey">
+      <Query>
+        <DataSourceName>ReportServer</DataSourceName>
+        <CommandText>SELECT tbl.* FROM (VALUES
+  ( 'Browser', 'May view folders, reports and subscribe to reports.')
+, ( 'Content Manager', 'May manage content in the Report Server. This includes folders, reports and resources.')
+, ( 'Manage Subscriptions', 'Manage report subscriptions')
+, ( 'My Reports', 'May publish reports and linked reports; manage folders, reports and resources in a user’s My Reports folder.')
+, ( 'NavigateFolder', 'Allow users to view and navigate child report folders')
+, ( 'Publisher', 'May publish reports and linked reports to the Report Server.')
+, ( 'Report Builder', 'May view report definitions.')
+) tbl ([Role], [Description]) 
+</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="Role">
+          <DataField>Role</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Description">
+          <DataField>Description</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Tablix Name="Tablix2">
+            <TablixCorner>
+              <TablixCornerRows>
+                <TablixCornerRow>
+                  <TablixCornerCell>
+                    <CellContents>
+                      <Textbox Name="Textbox5">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value />
+                                <Style>
+                                  <FontFamily>Tahoma</FontFamily>
+                                  <FontSize>8pt</FontSize>
+                                  <FontWeight>Medium</FontWeight>
+                                  <Color>#5b5b5b</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style />
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>Textbox5</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Style>Solid</Style>
+                            <Width>0.75pt</Width>
+                          </Border>
+                          <RightBorder>
+                            <Style>None</Style>
+                          </RightBorder>
+                          <BackgroundColor>=Variables!ColorTableHeader.Value</BackgroundColor>
+                          <VerticalAlign>Bottom</VerticalAlign>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixCornerCell>
+                  <TablixCornerCell>
+                    <CellContents>
+                      <Textbox Name="Textbox2">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>Folder Path</Value>
+                                <Style>
+                                  <FontFamily>Tahoma</FontFamily>
+                                  <FontSize>8pt</FontSize>
+                                  <FontWeight>Medium</FontWeight>
+                                  <Color>#5b5b5b</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style />
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>Textbox1</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Style>Solid</Style>
+                            <Width>0.75pt</Width>
+                          </Border>
+                          <LeftBorder>
+                            <Style>None</Style>
+                          </LeftBorder>
+                          <BackgroundColor>=Variables!ColorTableHeader.Value</BackgroundColor>
+                          <VerticalAlign>Bottom</VerticalAlign>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixCornerCell>
+                </TablixCornerRow>
+              </TablixCornerRows>
+            </TablixCorner>
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>3cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>3cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>5.5cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.6cm</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.6cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Group2">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!UserNameFormat.Value</Value>
+                                  <Style>
+                                    <FontFamily>Tahoma</FontFamily>
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                              <Width>0.75pt</Width>
+                            </Border>
+                            <BackgroundColor>=Code.CandyStripe(True, Variables!ColorCandyStripeEvenRow.Value, Variables!ColorCandyStripeOddRow.Value)</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="full_name">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!full_name.Value</Value>
+                                  <Style>
+                                    <FontFamily>Tahoma</FontFamily>
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>full_name</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                              <Width>0.75pt</Width>
+                            </Border>
+                            <BackgroundColor>=Code.CandyStripe(False, Variables!ColorCandyStripeEvenRow.Value, Variables!ColorCandyStripeOddRow.Value)</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Group1">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!email.Value</Value>
+                                  <Style>
+                                    <FontFamily>Tahoma</FontFamily>
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                              <Width>0.75pt</Width>
+                            </Border>
+                            <BackgroundColor>=Code.CandyStripe(False, Variables!ColorCandyStripeEvenRow.Value, Variables!ColorCandyStripeOddRow.Value)</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox17">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=IIF(IsNothing(Fields!UserNameFormat.Value), "", "l")</Value>
+                                  <Style>
+                                    <FontFamily>Wingdings</FontFamily>
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox17</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                              <Width>0.75pt</Width>
+                            </Border>
+                            <BackgroundColor>=Code.CandyStripe(False, Variables!ColorCandyStripeEvenRow.Value, Variables!ColorCandyStripeOddRow.Value)</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <TablixHeader>
+                    <Size>3.80146cm</Size>
+                    <CellContents>
+                      <Textbox Name="Textbox23">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>User Name</Value>
+                                <Style>
+                                  <FontFamily>Tahoma</FontFamily>
+                                  <FontSize>8pt</FontSize>
+                                  <FontWeight>Medium</FontWeight>
+                                  <Color>#5b5b5b</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style>
+                              <TextAlign>Center</TextAlign>
+                            </Style>
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>Textbox22</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Style>Solid</Style>
+                            <Width>0.75pt</Width>
+                          </Border>
+                          <BackgroundColor>=Variables!ColorTableHeader.Value</BackgroundColor>
+                          <VerticalAlign>Bottom</VerticalAlign>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixHeader>
+                </TablixMember>
+                <TablixMember>
+                  <TablixHeader>
+                    <Size>3.80146cm</Size>
+                    <CellContents>
+                      <Textbox Name="Textbox1">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>Full Name</Value>
+                                <Style>
+                                  <FontFamily>Tahoma</FontFamily>
+                                  <FontSize>8pt</FontSize>
+                                  <FontWeight>Medium</FontWeight>
+                                  <Color>#5b5b5b</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style>
+                              <TextAlign>Center</TextAlign>
+                            </Style>
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>Textbox1</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Style>Solid</Style>
+                            <Width>0.75pt</Width>
+                          </Border>
+                          <BackgroundColor>=Variables!ColorTableHeader.Value</BackgroundColor>
+                          <VerticalAlign>Bottom</VerticalAlign>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixHeader>
+                </TablixMember>
+                <TablixMember>
+                  <TablixHeader>
+                    <Size>3.80146cm</Size>
+                    <CellContents>
+                      <Textbox Name="Textbox22">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>Email</Value>
+                                <Style>
+                                  <FontFamily>Tahoma</FontFamily>
+                                  <FontSize>8pt</FontSize>
+                                  <FontWeight>Medium</FontWeight>
+                                  <Color>#5b5b5b</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style>
+                              <TextAlign>Center</TextAlign>
+                            </Style>
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>Textbox22</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Style>Solid</Style>
+                            <Width>0.75pt</Width>
+                          </Border>
+                          <BackgroundColor>=Variables!ColorTableHeader.Value</BackgroundColor>
+                          <VerticalAlign>Bottom</VerticalAlign>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixHeader>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="ColumnGroup">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!RoleName.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!RoleName.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <TablixHeader>
+                    <Size>3.80146cm</Size>
+                    <CellContents>
+                      <Textbox Name="RoleName1">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>=Fields!RoleName.Value</Value>
+                                <Style>
+                                  <FontFamily>Tahoma</FontFamily>
+                                  <FontSize>8pt</FontSize>
+                                  <FontWeight>Medium</FontWeight>
+                                  <Color>#5b5b5b</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style>
+                              <TextAlign>Left</TextAlign>
+                            </Style>
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>RoleName1</rd:DefaultName>
+                        <ToolTip>=Lookup(Fields!RoleName.Value, Fields!Role.Value, Fields!Description.Value, "PermissionKey")</ToolTip>
+                        <Style>
+                          <Border>
+                            <Style>Solid</Style>
+                            <Width>0.75pt</Width>
+                          </Border>
+                          <BackgroundColor>=Variables!ColorTableHeader.Value</BackgroundColor>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                          <WritingMode>Rotate270</WritingMode>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixHeader>
+                </TablixMember>
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <Group Name="FolderName1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!FolderPath.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!FolderPath.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <TablixHeader>
+                    <Size>0.6cm</Size>
+                    <CellContents>
+                      <Rectangle Name="Rectangle3">
+                        <ReportItems>
+                          <Image Name="image7">
+                            <Source>Embedded</Source>
+                            <Value>folder</Value>
+                            <Sizing>Clip</Sizing>
+                            <ActionInfo>
+                              <Actions>
+                                <Action>
+                                  <Hyperlink>="javascript:void(window.open('"+ Fields!FolderUrl.Value + "','_blank'))"</Hyperlink>
+                                </Action>
+                              </Actions>
+                            </ActionInfo>
+                            <Height>0.6cm</Height>
+                            <Width>0.6cm</Width>
+                            <ToolTip>go to this folder</ToolTip>
+                            <Style>
+                              <Border>
+                                <Style>None</Style>
+                                <Width>0.5pt</Width>
+                              </Border>
+                              <PaddingLeft>1.5pt</PaddingLeft>
+                              <PaddingTop>1.5pt</PaddingTop>
+                            </Style>
+                          </Image>
+                        </ReportItems>
+                        <KeepTogether>true</KeepTogether>
+                        <Style>
+                          <Border>
+                            <Style>Solid</Style>
+                            <Width>0.75pt</Width>
+                          </Border>
+                          <RightBorder>
+                            <Style>None</Style>
+                          </RightBorder>
+                          <BackgroundColor>=Variables!ColorTableHeader.Value</BackgroundColor>
+                        </Style>
+                      </Rectangle>
+                    </CellContents>
+                  </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <TablixHeader>
+                        <Size>5.5cm</Size>
+                        <CellContents>
+                          <Textbox Name="txtFolderPath">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>=Fields!FolderPath.Value</Value>
+                                    <Style>
+                                      <FontFamily>Tahoma</FontFamily>
+                                      <FontSize>8pt</FontSize>
+                                      <FontWeight>Medium</FontWeight>
+                                      <Color>#5b5b5b</Color>
+                                    </Style>
+                                  </TextRun>
+                                </TextRuns>
+                                <Style />
+                              </Paragraph>
+                            </Paragraphs>
+                            <Style>
+                              <Border>
+                                <Style>Solid</Style>
+                                <Width>0.75pt</Width>
+                              </Border>
+                              <LeftBorder>
+                                <Style>None</Style>
+                              </LeftBorder>
+                              <BackgroundColor>=Variables!ColorTableHeader.Value</BackgroundColor>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <TablixMembers>
+                        <TablixMember>
+                          <Group Name="FolderName2">
+                            <GroupExpressions>
+                              <GroupExpression>=Fields!FolderPath.Value</GroupExpression>
+                            </GroupExpressions>
+                          </Group>
+                          <SortExpressions>
+                            <SortExpression>
+                              <Value>=Fields!FolderPath.Value</Value>
+                            </SortExpression>
+                          </SortExpressions>
+                          <TablixMembers>
+                            <TablixMember>
+                              <Group Name="FolderName">
+                                <GroupExpressions>
+                                  <GroupExpression>=Fields!FolderPath.Value</GroupExpression>
+                                  <GroupExpression>=Fields!UserNameFormat.Value</GroupExpression>
+                                </GroupExpressions>
+                              </Group>
+                              <SortExpressions>
+                                <SortExpression>
+                                  <Value>=Fields!FolderPath.Value</Value>
+                                </SortExpression>
+                                <SortExpression>
+                                  <Value>=Fields!UserNameFormat.Value</Value>
+                                </SortExpression>
+                              </SortExpressions>
+                              <TablixMembers>
+                                <TablixMember />
+                              </TablixMembers>
+                            </TablixMember>
+                          </TablixMembers>
+                        </TablixMember>
+                      </TablixMembers>
+                    </TablixMember>
+                  </TablixMembers>
+                  <Visibility>
+                    <Hidden>=IsNothing(Fields!UserNameFormat.Value)</Hidden>
+                  </Visibility>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <RepeatColumnHeaders>true</RepeatColumnHeaders>
+            <RepeatRowHeaders>true</RepeatRowHeaders>
+            <FixedColumnHeaders>true</FixedColumnHeaders>
+            <FixedRowHeaders>true</FixedRowHeaders>
+            <KeepTogether>true</KeepTogether>
+            <DataSetName>FolderPermissions</DataSetName>
+            <Top>1.905cm</Top>
+            <Height>4.40146cm</Height>
+            <Width>18.2cm</Width>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+                <Width>0.75pt</Width>
+              </Border>
+            </Style>
+          </Tablix>
+          <Tablix Name="Tablix1">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>3.33042cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>8.76958cm</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.6cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="txtKey">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value EvaluationMode="Constant">Permissions Key</Value>
+                                  <Style>
+                                    <FontFamily>Tahoma</FontFamily>
+                                    <FontSize>8pt</FontSize>
+                                    <FontWeight>Medium</FontWeight>
+                                    <Color>#5b5b5b</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                              <Width>0.75pt</Width>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <ColSpan>2</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.6cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Role2">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Role</Value>
+                                  <Style>
+                                    <FontFamily>Tahoma</FontFamily>
+                                    <FontSize>8pt</FontSize>
+                                    <FontWeight>Medium</FontWeight>
+                                    <Color>#5b5b5b</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Role</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                              <Width>0.75pt</Width>
+                            </Border>
+                            <BackgroundColor>=Variables!ColorTableHeader.Value</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox4">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Description</Value>
+                                  <Style>
+                                    <FontFamily>Tahoma</FontFamily>
+                                    <FontSize>8pt</FontSize>
+                                    <FontWeight>Medium</FontWeight>
+                                    <Color>#5b5b5b</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox4</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                              <Width>0.75pt</Width>
+                            </Border>
+                            <BackgroundColor>=Variables!ColorTableHeader.Value</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.6cm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Role">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Role.Value</Value>
+                                  <Style>
+                                    <FontFamily>Tahoma</FontFamily>
+                                    <FontSize>8pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Role</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                              <Width>0.75pt</Width>
+                            </Border>
+                            <BackgroundColor>=Code.CandyStripe(True, Variables!ColorCandyStripeEvenRow.Value, Variables!ColorCandyStripeOddRow.Value)</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Description">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Description.Value</Value>
+                                  <Style>
+                                    <FontFamily>Tahoma</FontFamily>
+                                    <FontSize>8pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Description</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                              <Width>0.75pt</Width>
+                            </Border>
+                            <BackgroundColor>=Code.CandyStripe(False, Variables!ColorCandyStripeEvenRow.Value, Variables!ColorCandyStripeOddRow.Value)</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                </TablixMember>
+                <TablixMember>
+                  <Visibility>
+                    <Hidden>true</Hidden>
+                    <ToggleItem>txtKey</ToggleItem>
+                  </Visibility>
+                  <KeepWithGroup>After</KeepWithGroup>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="Details2" />
+                  <Visibility>
+                    <Hidden>true</Hidden>
+                    <ToggleItem>txtKey</ToggleItem>
+                  </Visibility>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>PermissionKey</DataSetName>
+            <Height>1.8cm</Height>
+            <Width>12.1cm</Width>
+            <ZIndex>1</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Tablix>
+        </ReportItems>
+        <Height>2.48286in</Height>
+        <Style />
+      </Body>
+      <Width>7.16535in</Width>
+      <Page>
+        <PageHeight>29.7cm</PageHeight>
+        <PageWidth>21cm</PageWidth>
+        <LeftMargin>2cm</LeftMargin>
+        <RightMargin>2cm</RightMargin>
+        <TopMargin>2cm</TopMargin>
+        <BottomMargin>2cm</BottomMargin>
+        <ColumnSpacing>0.13cm</ColumnSpacing>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="all_value">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>&lt;ALL&gt;</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>All Value Hidden</Prompt>
+      <Hidden>true</Hidden>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>&lt;ALL&gt;</Value>
+            <Label>&lt;ALL&gt;</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="ReportFolder">
+      <DataType>String</DataType>
+      <Prompt>Folder</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>ReportFolders</DataSetName>
+          <ValueField>ReportFolder</ValueField>
+          <LabelField>ReportFolder</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="UserName">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>&lt;ALL&gt;</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>User Name</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Users</DataSetName>
+          <ValueField>UserNameFormat</ValueField>
+          <LabelField>UserName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+  </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>1</NumberOfColumns>
+      <NumberOfRows>3</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>all_value</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>2</RowIndex>
+          <ParameterName>UserName</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>ReportFolder</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <Code>Private Alt As Boolean
+
+Public Function CandyStripe(ByVal NewRow As Boolean, ByVal OddColor as String, ByVal EvenColor as String) As String
+'------------------------------------------------------------------------------------------------
+' Purpose:  To candy stripe the detail rows of a report
+' Example:  BackgroundColor = Code.CandyStripe()
+' Note:     The first column needs a parameter of "True" passed in example: Code.CandyStripe(True)
+'------------------------------------------------------------------------------------------------
+
+	If NewRow Then 
+		Alt = Not Alt
+	End If
+	
+	If Alt Then
+		Return OddColor
+	Else
+		Return EvenColor
+	End If
+
+End Function
+
+Public Function ShowCheckbox(ByVal FieldValue As Boolean)
+
+If FieldValue Then
+	Return chr(168)
+Else
+	Return chr(254)
+End If
+
+End Function</Code>
+  <EmbeddedImages>
+    <EmbeddedImage Name="usericon">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAJ3SURBVDjLpZNtSNNRFIcNKunF1rZWBMJqKaSiX9RP1dClsjldA42slW0q5oxZiuHrlqllLayoaJa2jbm1Lc3QUZpKFmmaTMsaRp+kMgjBheSmTL2//kqMBJlFHx44XM7vOfdyuH4A/P6HFQ9zo7cpa/mM6RvCrVDzaVDy6C5JJKv6rwSnIhlFd0R0Up/GwF2KWyl01CTSkM/dQoQRzAurCjRCGnRUUE2FaoSL0HExiYVzsQwcj6RNrSqo4W5Gh6Yc4+1qDDTkIy+GhYK4nTgdz0H2PrrHUJzs71NQn86enPn+CVN9GnzruoYR63mMPbkC59gQzDl7pt7rc9f7FNyUhPY6Bx9gwt4E9zszhWWpdg6ZcS8j3O7zCTuEpnXB+3MNZkUUZu0NmHE8XsL91oSWwiiEc3MeseLrN6woYCWa/Zl8ozyQ3w3Hl2lYy0SwlCUvsVi/Gv2JwITnYPDun2Hy6jYuEzAF1jUBCVYpO6kXo+NuGMeBAgcgfwNkvgBOPgUqXgKvP7rBFvRhE1crp8Vq1noFYSlacVyqGk0D86gbART9BDk9BFnPCNJbCY5aCFL1Cyhtp0RWAp74MsKSrkq9guHyvfMTtmLc1togpZoyqYmyNoITzVTYRJCiXYBIQ3CwFqi83o3JDhX6C0M8XsGIMoQ4OyuRlq1DdZcLkmbgGDX1iIEKNxAcbgTEOqC4ZRaJ6Ub86K7CYFEo8Qo+GBQlQyXBczLZpbloaQ9k1NUz/kD2myBBKxRZpa5hVcQslalatoUxizxAVVrN3CW21bFj9F858Q9dnIRmDyeuybM71uxmH9BNBB1q6zybV7H9s1Ue4PM3/gu/AEbfqfWy2twsAAAAAElFTkSuQmCC</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="report">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAIbSURBVDjLjVPPaxNREJ79Qena1EO6u/GQ9CiFouCp5FQQET0KQvBQbA/tqf+BCEXoyauCl7KFHkoOvYimUpToRTyISVtsliImpCwkLUGqxvzY3bfOvO2+bOgljx32vdn5Zr4336wUBAGUy+V7f96/3PVaDnjNKty17DkYbZ1KpVLppu/7n5nbnVDAh7NXK3Bn4/tIaFVV59R8Pm9ns9nV8aOClZhCbwDguu5QIGMMiGn8rGlamCSXy80ggxfMXAAFPPj9qXipkizLHBQtSZJEQsFg7KBgTZroZGEArWc7TSAchXIA4w+sPdQH1xAMDGQgeXD+4aNIQODZjHaRILT9Wpt/Q8wwA3X/rXVVD3glkQD3h7V/vGrA8Bvz0Rf2AK/F7zRQoY8qIAPn+TLczx/xRPF709nzPOFHayeTyfkBg29vrEkj5BkFPdlu4NtHugH4wYUSqNBaziQGE5hXifXgMVfh115RdHr90TUOIkPNBZtutwvVahUURZFlYuA4zmqzsAl/v24BFhQSRXJFDYvAlUoFUqkU+VmMwSLIyKC1W4ypwISRr9PpgG3bkMlkQNf1YRXkL6+thIlN8y9PIDGgygROp9NgGMZgqOIqEIPa0yV4sPeDgwlIne/1etBoNHhV0zTjExn+Cxh041bl3c8rSY0PCzWIgGQRCxpnSlKv1/m+3++HSaKGLV2fmp9OjN122u7JxnHrYNTf+T+76nzVPsi2lQAAAABJRU5ErkJggg==</ImageData>
+    </EmbeddedImage>
+    <EmbeddedImage Name="folder">
+      <MIMEType>image/png</MIMEType>
+      <ImageData>iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAGrSURBVDjLxZO7ihRBFIa/6u0ZW7GHBUV0UQQTZzd3QdhMQxOfwMRXEANBMNQX0MzAzFAwEzHwARbNFDdwEd31Mj3X7a6uOr9BtzNjYjKBJ6nicP7v3KqcJFaxhBVtZUAK8OHlld2st7Xl3DJPVONP+zEUV4HqL5UDYHr5xvuQAjgl/Qs7TzvOOVAjxjlC+ePSwe6DfbVegLVuT4r14eTr6zvA8xSAoBLzx6pvj4l+DZIezuVkG9fY2H7YRQIMZIBwycmzH1/s3F8AapfIPNF3kQk7+kw9PWBy+IZOdg5Ug3mkAATy/t0usovzGeCUWTjCz0B+Sj0ekfdvkZ3abBv+U4GaCtJ1iEm6ANQJ6fEzrG/engcKw/wXQvEKxSEKQxRGKE7Izt+DSiwBJMUSm71rguMYhQKrBygOIRStf4TiFFRBvbRGKiQLWP29yRSHKBTtfdBmHs0BUpgvtgF4yRFR+NUKi0XZcYjCeCG2smkzLAHkbRBmP0/Uk26O5YnUActBp1GsAI+S5nRJJJal5K1aAMrq0d6Tm9uI6zjyf75dAe6tx/SsWeD//o2/Ab6IH3/h25pOAAAAAElFTkSuQmCC</ImageData>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <Variables>
+    <Variable Name="ColorCandyStripeEvenRow">
+      <Value>#FFFFFF</Value>
+    </Variable>
+    <Variable Name="ColorCandyStripeOddRow">
+      <Value>WhiteSmoke</Value>
+    </Variable>
+    <Variable Name="ColorTableHeader">
+      <Value>WhiteSmoke</Value>
+    </Variable>
+  </Variables>
+  <rd:ReportUnitType>Cm</rd:ReportUnitType>
+  <rd:ReportID>73bf78ec-5d72-4bb2-bdf4-804444e517c6</rd:ReportID>
+</Report>

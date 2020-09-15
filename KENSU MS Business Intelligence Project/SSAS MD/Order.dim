@@ -1,0 +1,223 @@
+﻿<Dimension xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ddl2="http://schemas.microsoft.com/analysisservices/2003/engine/2" xmlns:ddl2_2="http://schemas.microsoft.com/analysisservices/2003/engine/2/2" xmlns:ddl100_100="http://schemas.microsoft.com/analysisservices/2008/engine/100/100" xmlns:ddl200="http://schemas.microsoft.com/analysisservices/2010/engine/200" xmlns:ddl200_200="http://schemas.microsoft.com/analysisservices/2010/engine/200/200" xmlns:ddl300="http://schemas.microsoft.com/analysisservices/2011/engine/300" xmlns:ddl300_300="http://schemas.microsoft.com/analysisservices/2011/engine/300/300" xmlns:ddl400="http://schemas.microsoft.com/analysisservices/2012/engine/400" xmlns:ddl400_400="http://schemas.microsoft.com/analysisservices/2012/engine/400/400" xmlns:ddl500="http://schemas.microsoft.com/analysisservices/2013/engine/500" xmlns:ddl500_500="http://schemas.microsoft.com/analysisservices/2013/engine/500/500" xmlns:dwd="http://schemas.microsoft.com/DataWarehouse/Designer/1.0" dwd:design-time-name="7527d076-a1bd-4d38-9347-225c97e13df8" xmlns="http://schemas.microsoft.com/analysisservices/2003/engine">
+  <ID>Order</ID>
+  <Name>Order</Name>
+  <CreatedTimestamp>0001-01-01T00:00:00Z</CreatedTimestamp>
+  <LastSchemaUpdate>0001-01-01T00:00:00Z</LastSchemaUpdate>
+  <Annotations>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:DiagramLayout</Name>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:ShowFriendlyNames</Name>
+      <Value>true</Value>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:ShowRelationshipNames</Name>
+      <Value>false</Value>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:UseDiagramDefaultLayout</Name>
+      <Value>true</Value>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:DiagramViewPortLeft</Name>
+      <Value>0</Value>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:DiagramViewPortTop</Name>
+      <Value>0</Value>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:DiagramBoundingLeft</Name>
+      <Value>0</Value>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:DiagramBoundingTop</Name>
+      <Value>0</Value>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:DiagramZoom</Name>
+      <Value>100</Value>
+    </Annotation>
+  </Annotations>
+  <LastProcessed>0001-01-01T00:00:00Z</LastProcessed>
+  <State>Unprocessed</State>
+  <Source xsi:type="DataSourceViewBinding" dwd:design-time-name="62295ecc-f159-4e68-9cb6-70d83cf24848">
+    <DataSourceViewID>KENSU Online Music Store DW</DataSourceViewID>
+  </Source>
+  <ErrorConfiguration dwd:design-time-name="be023f9e-1c43-407b-a70d-03d09278143a">
+    <KeyNotFound>ReportAndStop</KeyNotFound>
+    <KeyDuplicate>ReportAndStop</KeyDuplicate>
+    <NullKeyNotAllowed>ReportAndStop</NullKeyNotAllowed>
+  </ErrorConfiguration>
+  <CurrentStorageMode>Molap</CurrentStorageMode>
+  <Attributes>
+    <Attribute dwd:design-time-name="7c20753f-1d71-497e-a1c5-86f4a0eaa03d">
+      <ID>Order Key</ID>
+      <Name>Order Key</Name>
+      <Usage>Key</Usage>
+      <KeyColumns>
+        <KeyColumn dwd:design-time-name="be03afc7-d6d6-4e54-b065-9e15fa5aad7c">
+          <DataType>BigInt</DataType>
+          <Source xsi:type="ColumnBinding" dwd:design-time-name="c73a8395-9d7b-495a-9903-8566191d8065">
+            <TableID>Fact_Order</TableID>
+            <ColumnID>Order_x0020_Key</ColumnID>
+          </Source>
+        </KeyColumn>
+      </KeyColumns>
+      <AttributeRelationships>
+        <AttributeRelationship dwd:design-time-name="3de209d3-a583-490a-82ec-20c9a5491b2d">
+          <AttributeID>Picked Date Key</AttributeID>
+          <Name>Picked Date Key</Name>
+        </AttributeRelationship>
+        <AttributeRelationship dwd:design-time-name="3ee1bd32-f840-4682-8596-036817ebdba2">
+          <AttributeID>Customer Key</AttributeID>
+          <Name>Customer Key</Name>
+        </AttributeRelationship>
+        <AttributeRelationship dwd:design-time-name="fc1ff561-b0f5-4377-9bf0-52250ea944ae">
+          <AttributeID>City Key</AttributeID>
+          <Name>City Key</Name>
+        </AttributeRelationship>
+        <AttributeRelationship dwd:design-time-name="208de1de-ff70-44ae-8e24-69b66f1e7d2f">
+          <AttributeID>Salesperson Key</AttributeID>
+          <Name>Salesperson Key</Name>
+        </AttributeRelationship>
+        <AttributeRelationship dwd:design-time-name="6e84e649-4b4b-4fed-9f96-ff079331ed5f">
+          <AttributeID>Stock Item Key</AttributeID>
+          <Name>Stock Item Key</Name>
+        </AttributeRelationship>
+        <AttributeRelationship dwd:design-time-name="b140f68d-d9e7-4683-bf36-1dd567b23a38">
+          <AttributeID>Picker Key</AttributeID>
+          <Name>Picker Key</Name>
+        </AttributeRelationship>
+        <AttributeRelationship dwd:design-time-name="503165b3-205a-4268-9ef2-2415ca298612">
+          <AttributeID>Order Date Key</AttributeID>
+          <Name>Order Date Key</Name>
+        </AttributeRelationship>
+      </AttributeRelationships>
+      <OrderBy>Key</OrderBy>
+      <ddl200:ProcessingState>Unprocessed</ddl200:ProcessingState>
+      <ddl300:AttributeHierarchyProcessingState>Unprocessed</ddl300:AttributeHierarchyProcessingState>
+    </Attribute>
+    <Attribute dwd:design-time-name="7916c2f1-c6cd-4c07-9e9e-30beab31fcad">
+      <ID>Picked Date Key</ID>
+      <Name>Picked Date Key</Name>
+      <KeyColumns>
+        <KeyColumn dwd:design-time-name="b7a723f9-0a6b-4103-9004-851986d2fb63">
+          <DataType>Date</DataType>
+          <Source xsi:type="ColumnBinding" dwd:design-time-name="4697f97e-1d6b-47d2-8e91-081d05006644">
+            <TableID>Fact_Order</TableID>
+            <ColumnID>Picked_x0020_Date_x0020_Key</ColumnID>
+          </Source>
+        </KeyColumn>
+      </KeyColumns>
+      <OrderBy>Key</OrderBy>
+      <AttributeHierarchyVisible>false</AttributeHierarchyVisible>
+      <ddl200:ProcessingState>Unprocessed</ddl200:ProcessingState>
+      <ddl300:AttributeHierarchyProcessingState>Unprocessed</ddl300:AttributeHierarchyProcessingState>
+    </Attribute>
+    <Attribute dwd:design-time-name="f7cfd280-5f64-43f7-91c4-faec57e85f67">
+      <ID>Customer Key</ID>
+      <Name>Customer Key</Name>
+      <KeyColumns>
+        <KeyColumn dwd:design-time-name="4ab1f9f0-2c03-4e0b-9859-16192ab0dec5">
+          <DataType>Integer</DataType>
+          <Source xsi:type="ColumnBinding" dwd:design-time-name="38c96306-0e74-4d5a-99b7-7ea2217fb049">
+            <TableID>Fact_Order</TableID>
+            <ColumnID>Customer_x0020_Key</ColumnID>
+          </Source>
+        </KeyColumn>
+      </KeyColumns>
+      <OrderBy>Key</OrderBy>
+      <AttributeHierarchyVisible>false</AttributeHierarchyVisible>
+      <ddl200:ProcessingState>Unprocessed</ddl200:ProcessingState>
+      <ddl300:AttributeHierarchyProcessingState>Unprocessed</ddl300:AttributeHierarchyProcessingState>
+    </Attribute>
+    <Attribute dwd:design-time-name="b7d61933-07ee-4388-a216-6090d2110a1b">
+      <ID>City Key</ID>
+      <Name>City Key</Name>
+      <KeyColumns>
+        <KeyColumn dwd:design-time-name="fcd8da13-5666-40a3-9571-6d52bef91085">
+          <DataType>Integer</DataType>
+          <Source xsi:type="ColumnBinding" dwd:design-time-name="f8b9238a-739d-4931-b666-5a7b474483d0">
+            <TableID>Fact_Order</TableID>
+            <ColumnID>City_x0020_Key</ColumnID>
+          </Source>
+        </KeyColumn>
+      </KeyColumns>
+      <OrderBy>Key</OrderBy>
+      <AttributeHierarchyVisible>false</AttributeHierarchyVisible>
+      <ddl200:ProcessingState>Unprocessed</ddl200:ProcessingState>
+      <ddl300:AttributeHierarchyProcessingState>Unprocessed</ddl300:AttributeHierarchyProcessingState>
+    </Attribute>
+    <Attribute dwd:design-time-name="ac3ddeba-83de-4ddc-a51c-271a1b8d34ee">
+      <ID>Salesperson Key</ID>
+      <Name>Salesperson Key</Name>
+      <KeyColumns>
+        <KeyColumn dwd:design-time-name="5a57198e-9a2c-4423-98e5-0eb2e257f900">
+          <DataType>Integer</DataType>
+          <Source xsi:type="ColumnBinding" dwd:design-time-name="0892c5d3-c546-478f-9c52-728129a67f26">
+            <TableID>Fact_Order</TableID>
+            <ColumnID>Salesperson_x0020_Key</ColumnID>
+          </Source>
+        </KeyColumn>
+      </KeyColumns>
+      <OrderBy>Key</OrderBy>
+      <AttributeHierarchyVisible>false</AttributeHierarchyVisible>
+      <ddl200:ProcessingState>Unprocessed</ddl200:ProcessingState>
+      <ddl300:AttributeHierarchyProcessingState>Unprocessed</ddl300:AttributeHierarchyProcessingState>
+    </Attribute>
+    <Attribute dwd:design-time-name="1a224d31-e1b9-47a3-b20b-c866f7935c94">
+      <ID>Stock Item Key</ID>
+      <Name>Stock Item Key</Name>
+      <KeyColumns>
+        <KeyColumn dwd:design-time-name="d635801a-bbd1-4176-80d8-9c5e520de894">
+          <DataType>Integer</DataType>
+          <Source xsi:type="ColumnBinding" dwd:design-time-name="ea753e96-6ac0-4052-9330-3d8e65c7e125">
+            <TableID>Fact_Order</TableID>
+            <ColumnID>Stock_x0020_Item_x0020_Key</ColumnID>
+          </Source>
+        </KeyColumn>
+      </KeyColumns>
+      <OrderBy>Key</OrderBy>
+      <AttributeHierarchyVisible>false</AttributeHierarchyVisible>
+      <ddl200:ProcessingState>Unprocessed</ddl200:ProcessingState>
+      <ddl300:AttributeHierarchyProcessingState>Unprocessed</ddl300:AttributeHierarchyProcessingState>
+    </Attribute>
+    <Attribute dwd:design-time-name="27fd7fa6-d4bd-41ed-b1dc-03d123c97a17">
+      <ID>Picker Key</ID>
+      <Name>Picker Key</Name>
+      <KeyColumns>
+        <KeyColumn dwd:design-time-name="72ce392c-cd44-440b-883e-c73203709a6f">
+          <DataType>Integer</DataType>
+          <Source xsi:type="ColumnBinding" dwd:design-time-name="7214626c-4d73-47e1-8132-d1cf0e706b33">
+            <TableID>Fact_Order</TableID>
+            <ColumnID>Picker_x0020_Key</ColumnID>
+          </Source>
+        </KeyColumn>
+      </KeyColumns>
+      <OrderBy>Key</OrderBy>
+      <AttributeHierarchyVisible>false</AttributeHierarchyVisible>
+      <ddl200:ProcessingState>Unprocessed</ddl200:ProcessingState>
+      <ddl300:AttributeHierarchyProcessingState>Unprocessed</ddl300:AttributeHierarchyProcessingState>
+    </Attribute>
+    <Attribute dwd:design-time-name="92644a23-beb6-494e-ae17-5d9610658dbd">
+      <ID>Order Date Key</ID>
+      <Name>Order Date Key</Name>
+      <KeyColumns>
+        <KeyColumn dwd:design-time-name="a98baab0-014b-4831-b183-141bac71fa2d">
+          <DataType>Date</DataType>
+          <Source xsi:type="ColumnBinding" dwd:design-time-name="258f4f78-71ad-4820-bc2b-987415dca3c6">
+            <TableID>Fact_Order</TableID>
+            <ColumnID>Order_x0020_Date_x0020_Key</ColumnID>
+          </Source>
+        </KeyColumn>
+      </KeyColumns>
+      <OrderBy>Key</OrderBy>
+      <AttributeHierarchyVisible>false</AttributeHierarchyVisible>
+      <ddl200:ProcessingState>Unprocessed</ddl200:ProcessingState>
+      <ddl300:AttributeHierarchyProcessingState>Unprocessed</ddl300:AttributeHierarchyProcessingState>
+    </Attribute>
+  </Attributes>
+  <ddl300:ProcessingState>Unprocessed</ddl300:ProcessingState>
+</Dimension>

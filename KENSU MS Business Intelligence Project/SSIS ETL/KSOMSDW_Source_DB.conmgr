@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<DTS:ConnectionManager xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:ObjectName="KSOMSDW_Source_DB"
+  DTS:DTSID="{4E533B5F-12D1-41FE-9FB3-A412AF874A41}"
+  DTS:CreationName="OLEDB">
+  <DTS:ObjectData>
+    <DTS:ConnectionManager
+      DTS:ConnectionString="Data Source=.;Initial Catalog=KENSUOnlineMusicStoreDW;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;" />
+  </DTS:ObjectData>
+</DTS:ConnectionManager>

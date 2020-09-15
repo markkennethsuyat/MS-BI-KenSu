@@ -1,0 +1,115 @@
+﻿<ConfigurationSettings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ddl2="http://schemas.microsoft.com/analysisservices/2003/engine/2" xmlns:ddl2_2="http://schemas.microsoft.com/analysisservices/2003/engine/2/2" xmlns:ddl100_100="http://schemas.microsoft.com/analysisservices/2008/engine/100/100" xmlns:ddl200="http://schemas.microsoft.com/analysisservices/2010/engine/200" xmlns:ddl200_200="http://schemas.microsoft.com/analysisservices/2010/engine/200/200" xmlns:ddl300="http://schemas.microsoft.com/analysisservices/2011/engine/300" xmlns:ddl300_300="http://schemas.microsoft.com/analysisservices/2011/engine/300/300" xmlns:ddl400="http://schemas.microsoft.com/analysisservices/2012/engine/400" xmlns:ddl400_400="http://schemas.microsoft.com/analysisservices/2012/engine/400/400" xmlns:ddl500="http://schemas.microsoft.com/analysisservices/2013/engine/500" xmlns:ddl500_500="http://schemas.microsoft.com/analysisservices/2013/engine/500/500" xmlns:dwd="http://schemas.microsoft.com/DataWarehouse/Designer/1.0">
+  <Database>
+    <DataSources>
+      <DataSource>
+        <ID>KENSU Online Music Store DW</ID>
+        <ConnectionString>Provider=SQLNCLI11.1;Data Source=.;Integrated Security=SSPI;Initial Catalog=KENSUOnlineMusicStoreDW</ConnectionString>
+        <ImpersonationInfo>
+          <ImpersonationMode xmlns="http://schemas.microsoft.com/analysisservices/2003/engine">ImpersonateAccount</ImpersonationMode>
+          <Account xmlns="http://schemas.microsoft.com/analysisservices/2003/engine">Mark Kenneth Suyat</Account>
+          <ImpersonationInfoSecurity xmlns="http://schemas.microsoft.com/analysisservices/2003/engine">PasswordRemoved</ImpersonationInfoSecurity>
+        </ImpersonationInfo>
+      </DataSource>
+    </DataSources>
+    <Dimensions>
+      <Dimension>
+        <ID>Transaction Type</ID>
+      </Dimension>
+      <Dimension>
+        <ID>Date</ID>
+      </Dimension>
+      <Dimension>
+        <ID>Customer</ID>
+      </Dimension>
+      <Dimension>
+        <ID>Stock Item</ID>
+      </Dimension>
+      <Dimension>
+        <ID>Supplier</ID>
+      </Dimension>
+      <Dimension>
+        <ID>City</ID>
+      </Dimension>
+      <Dimension>
+        <ID>Employee</ID>
+      </Dimension>
+      <Dimension>
+        <ID>Order</ID>
+      </Dimension>
+      <Dimension>
+        <ID>Purchase</ID>
+      </Dimension>
+      <Dimension>
+        <ID>Sale</ID>
+      </Dimension>
+      <Dimension>
+        <ID>Stock Holding</ID>
+      </Dimension>
+      <Dimension>
+        <ID>Payment Method</ID>
+      </Dimension>
+      <Dimension>
+        <ID>Transaction</ID>
+      </Dimension>
+    </Dimensions>
+    <Cubes>
+      <Cube>
+        <ID>KENSU Online Music Store DW</ID>
+        <MeasureGroups>
+          <MeasureGroup>
+            <ID>Movement</ID>
+            <Partitions>
+              <Partition>
+                <ID>Movement</ID>
+              </Partition>
+            </Partitions>
+          </MeasureGroup>
+          <MeasureGroup>
+            <ID>Order</ID>
+            <Partitions>
+              <Partition>
+                <ID>Order</ID>
+              </Partition>
+            </Partitions>
+          </MeasureGroup>
+          <MeasureGroup>
+            <ID>Purchase</ID>
+            <Partitions>
+              <Partition>
+                <ID>Purchase</ID>
+              </Partition>
+            </Partitions>
+          </MeasureGroup>
+          <MeasureGroup>
+            <ID>Sale</ID>
+            <Partitions>
+              <Partition>
+                <ID>Sale</ID>
+              </Partition>
+            </Partitions>
+          </MeasureGroup>
+          <MeasureGroup>
+            <ID>Stock Holding</ID>
+            <Partitions>
+              <Partition>
+                <ID>Stock Holding</ID>
+              </Partition>
+            </Partitions>
+          </MeasureGroup>
+          <MeasureGroup>
+            <ID>Transaction</ID>
+            <Partitions>
+              <Partition>
+                <ID>Transaction</ID>
+              </Partition>
+            </Partitions>
+          </MeasureGroup>
+        </MeasureGroups>
+      </Cube>
+    </Cubes>
+    <DataSourceImpersonationInfo>
+      <ImpersonationMode xmlns="http://schemas.microsoft.com/analysisservices/2003/engine">Default</ImpersonationMode>
+      <ImpersonationInfoSecurity xmlns="http://schemas.microsoft.com/analysisservices/2003/engine">Unchanged</ImpersonationInfoSecurity>
+    </DataSourceImpersonationInfo>
+  </Database>
+</ConfigurationSettings>
