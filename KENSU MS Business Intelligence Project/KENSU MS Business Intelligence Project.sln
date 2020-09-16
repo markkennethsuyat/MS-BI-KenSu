@@ -5,13 +5,13 @@ VisualStudioVersion = 15.0.28307.1259
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3910634F-16C9-436E-B302-8DF0C18959C3}"
 EndProject
-Project("{159641D6-6404-4A2A-AE62-294DE0FE8301}") = "SSIS Pacakages", "SSIS ETL\SSIS Pacakages.dtproj", "{7762C845-1207-4852-8472-60B860BE584D}"
+Project("{159641D6-6404-4A2A-AE62-294DE0FE8301}") = "SSIS Packages", "SSIS ETL\SSIS Packages.dtproj", "{7762C845-1207-4852-8472-60B860BE584D}"
 EndProject
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "SSDT DatabaseOLTP", "SSDT Database\SSDT DatabaseOLTP.sqlproj", "{C2B65FB0-56B8-4D92-B884-D1E629BCBA33}"
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "SSDT Database", "SSDT Database\SSDT Database.sqlproj", "{C2B65FB0-56B8-4D92-B884-D1E629BCBA33}"
 EndProject
 Project("{F14B399A-7131-4C87-9E4B-1186C45EF12D}") = "SSRS Server Reports", "SSRS Server Reports\SSRS Server Reports.rptproj", "{D0BD8844-A33C-4246-9856-A543AD8C2B25}"
 EndProject
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "SSDT DatawarehouseOLTP", "SSDT Datawarehouse\SSDT DatawarehouseOLTP.sqlproj", "{2E53CC84-0F3F-439C-A6F0-6CBD63921362}"
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "SSDT Datawarehouse", "SSDT Datawarehouse\SSDT Datawarehouse.sqlproj", "{2E53CC84-0F3F-439C-A6F0-6CBD63921362}"
 EndProject
 Project("{F14B399A-7131-4C87-9E4B-1186C45EF12D}") = "SSRS Sample Reports", "SSRS Sample Reports\SSRS Sample Reports.rptproj", "{1D480C6D-D088-4E75-9BC4-9D1188477F2E}"
 EndProject
