@@ -17,7 +17,7 @@ Project("{F14B399A-7131-4C87-9E4B-1186C45EF12D}") = "SSRS Sample Reports", "SSRS
 EndProject
 Project("{D2ABAB84-BF74-430A-B69E-9DC6D40DDA17}") = "SSAS MultidimensionalOLAP", "SSAS MOLAP\SSAS MultidimensionalOLAP.dwproj", "{D446AF41-1F13-42B6-BD7F-6BEC34D37CBC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data Simulation Data Inserts", "..\..\Mark Kenneth Suyat\Code Samples\GIT Files\SSMS\SQL Server Samples\samples\databases\wide-world-importers\workload-drivers\order-insert\MultithreadedOrderInsert\Data Simulation Data Inserts.csproj", "{35325643-119B-40C9-9F95-BE22CB062599}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultithreadedInMemoryTableInsert", "MultithreadedInMemoryTableInsert\MultithreadedInMemoryTableInsert.csproj", "{35325643-119B-40C9-9F95-BE22CB062599}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

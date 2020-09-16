@@ -8,7 +8,4 @@ D:\GitRepo\KENSU MS Business Intelligence Project\SSDT Database\bin\Debug\SSDT_D
 D:\GitRepo\KENSU MS Business Intelligence Project\SSDT Database\bin\Debug\SSDT_Database.pdb
 D:\GitRepo\KENSU MS Business Intelligence Project\SSDT Database\obj\Debug\SSDT_Database.dll
 D:\GitRepo\KENSU MS Business Intelligence Project\SSDT Database\obj\Debug\SSDT_Database.pdb
-D:\GitRepo\KENSU MS Business Intelligence Project\SSDT Database\obj\Debug\Model.xml
-D:\GitRepo\KENSU MS Business Intelligence Project\SSDT Database\obj\Debug\refactor.xml
-D:\GitRepo\KENSU MS Business Intelligence Project\SSDT Database\obj\Debug\postdeploy.sql
-D:\GitRepo\KENSU MS Business Intelligence Project\SSDT Database\obj\Debug\predeploy.sql
+D:\GitRepo\KENSU MS Business Intelligence Project\SSDT Database\obj\Debug\SSDT DatabaseOLTP.sqlprojAssemblyReference.cache
