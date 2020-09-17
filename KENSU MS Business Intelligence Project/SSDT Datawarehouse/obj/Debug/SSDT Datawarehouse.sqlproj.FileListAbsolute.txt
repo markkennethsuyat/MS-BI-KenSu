@@ -1,9 +1,0 @@
-D:\GitHubRepo\KENSU MS Business Intelligence Project\SSDT Datawarehouse\bin\Debug\SSDT Datawarehouse.dacpac
-D:\GitHubRepo\KENSU MS Business Intelligence Project\SSDT Datawarehouse\bin\Debug\SSDT_Datawarehouse.dll
-D:\GitHubRepo\KENSU MS Business Intelligence Project\SSDT Datawarehouse\bin\Debug\SSDT_Datawarehouse.pdb
-D:\GitHubRepo\KENSU MS Business Intelligence Project\SSDT Datawarehouse\obj\Debug\SSDT_Datawarehouse.dll
-D:\GitHubRepo\KENSU MS Business Intelligence Project\SSDT Datawarehouse\obj\Debug\SSDT_Datawarehouse.pdb
-D:\GitHubRepo\KENSU MS Business Intelligence Project\SSDT Datawarehouse\obj\Debug\Model.xml
-D:\GitHubRepo\KENSU MS Business Intelligence Project\SSDT Datawarehouse\obj\Debug\refactor.xml
-D:\GitHubRepo\KENSU MS Business Intelligence Project\SSDT Datawarehouse\obj\Debug\postdeploy.sql
-D:\GitHubRepo\KENSU MS Business Intelligence Project\SSDT Datawarehouse\obj\Debug\predeploy.sql

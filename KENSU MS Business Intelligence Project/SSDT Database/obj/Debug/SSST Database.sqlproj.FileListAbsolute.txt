@@ -1,9 +1,0 @@
-D:\myProjects\source\repos\KENSU MS Business Intelligence Project\SSDT Database\bin\Debug\SSST Database.dacpac
-D:\myProjects\source\repos\KENSU MS Business Intelligence Project\SSDT Database\bin\Debug\SSDT_Database.dll
-D:\myProjects\source\repos\KENSU MS Business Intelligence Project\SSDT Database\bin\Debug\SSDT_Database.pdb
-D:\myProjects\source\repos\KENSU MS Business Intelligence Project\SSDT Database\obj\Debug\SSDT_Database.dll
-D:\myProjects\source\repos\KENSU MS Business Intelligence Project\SSDT Database\obj\Debug\SSDT_Database.pdb
-D:\myProjects\source\repos\KENSU MS Business Intelligence Project\SSDT Database\obj\Debug\Model.xml
-D:\myProjects\source\repos\KENSU MS Business Intelligence Project\SSDT Database\obj\Debug\refactor.xml
-D:\myProjects\source\repos\KENSU MS Business Intelligence Project\SSDT Database\obj\Debug\postdeploy.sql
-D:\myProjects\source\repos\KENSU MS Business Intelligence Project\SSDT Database\obj\Debug\predeploy.sql
