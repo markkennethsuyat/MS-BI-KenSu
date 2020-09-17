@@ -52,7 +52,7 @@
     <DataSet Include="Servers.rsd" />
   </ItemGroup>
   <ItemGroup>
-    <DataSource Include="ReportServer.rds" />
+    <DataSource Include="KENSUDB.rds" />
   </ItemGroup>
   <ItemGroup>
     <Report Include="Activity Monitor.rdl" />

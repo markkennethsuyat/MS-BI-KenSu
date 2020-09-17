@@ -4,20 +4,16 @@
   <Author>Anthony Duguid</Author>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
-    <DataSource Name="DynamicSource">
-      <ConnectionProperties>
-        <DataProvider>SQL</DataProvider>
-        <ConnectString>="data source=" &amp; Parameters!Server.Value &amp; ";initial catalog=msdb"</ConnectString>
-        <IntegratedSecurity>true</IntegratedSecurity>
-      </ConnectionProperties>
-      <rd:SecurityType>Integrated</rd:SecurityType>
-      <rd:DataSourceID>856aa19d-7b0a-4542-894d-3038cca76358</rd:DataSourceID>
+    <DataSource Name="KENSUDB">
+      <DataSourceReference>KENSUDB</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>22615924-579b-46b4-bcaf-1452d1f39344</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <DataSets>
     <DataSet Name="Jobs">
       <Query>
-        <DataSourceName>DynamicSource</DataSourceName>
+        <DataSourceName>KENSUDB</DataSourceName>
         <QueryParameters>
           <QueryParameter Name="@CommandSearch">
             <Value>=Parameters!CommandSearch.Value</Value>
@@ -26,76 +22,60 @@
             <Value>=Parameters!Category.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>SELECT 
-	  ServerName = @@ServerName
-	, jb.name
-	, jb.[DESCRIPTION]
-	, jb.Category_id
-	, cg.Category_Class
-	, cg.Category_type
-	, [Category] = cg.[name]
-	, js.database_name 
-	, js.step_id 
-	, js.step_name 
-	, js.command 
-FROM 
-	dbo.sysjobs as jb with (NOLOCK)
-	INNER JOIN dbo.sysjobsteps AS js WITH (NOLOCK) ON jb.job_id = js.job_id 
-	LEFT OUTER JOIN dbo.syscategories as cg with (NOLOCK) on jb.category_id = cg.Category_ID
-WHERE  
-	1=1
-	AND (('&lt;ALL&gt;' IN (@Category))  OR ( cg.[name]  IN(@Category)))
-	AND 
-		(
-		@CommandSearch IS NULL 
-		OR (jb.name LIKE '%' + @CommandSearch + '%') 
-		OR (js.command LIKE '%' + @CommandSearch + '%') 
-		OR (js.step_name LIKE '%' + @CommandSearch + '%')
-		)
-ORDER BY 
-	  jb.name
-	, js.step_id</CommandText>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>Reports.GenerateJobsearchDataset</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
         <Field Name="ServerName">
           <DataField>ServerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Name">
-          <DataField>Name</DataField>
+          <DataField>name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="DESCRIPTION">
-          <DataField>Description</DataField>
+          <DataField>DESCRIPTION</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="category_id">
-          <DataField>category_id</DataField>
+          <DataField>Category_id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="category_class">
-          <DataField>category_class</DataField>
+          <DataField>Category_Class</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="category_type">
-          <DataField>category_type</DataField>
+          <DataField>Category_type</DataField>
+          <rd:TypeName>System.Byte</rd:TypeName>
         </Field>
         <Field Name="Category">
           <DataField>Category</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="database_name">
           <DataField>database_name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="step_id">
           <DataField>step_id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="step_name">
           <DataField>step_name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="command">
           <DataField>command</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
     <DataSet Name="Categories">
       <Query>
-        <DataSourceName>DynamicSource</DataSourceName>
+        <DataSourceName>KENSUDB</DataSourceName>
         <CommandText>;WITH
 categories
 AS
@@ -104,7 +84,7 @@ AS
 		  SortORder = CAST(1 AS INTEGER)
 		, name 
 	FROM 
-		dbo.syscategories WITH (NOLOCK)
+		msdb.dbo.syscategories WITH (NOLOCK)
 	UNION ALL 
 	SELECT 
 		  0
@@ -121,10 +101,8 @@ ORDER BY
       </Query>
       <Fields>
         <Field Name="name">
-          <DataField>name</DataField>
-        </Field>
-        <Field Name="SortOrder">
-          <DataField>SortOrder</DataField>
+          <DataField>Name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -993,12 +971,17 @@ ORDER BY
   <ReportParameters>
     <ReportParameter Name="Server">
       <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>KENSU</Value>
+        </Values>
+      </DefaultValue>
       <AllowBlank>true</AllowBlank>
       <Prompt>Server</Prompt>
       <ValidValues>
         <ParameterValues>
           <ParameterValue>
-            <Value>="Localhost"</Value>
+            <Value>KENSU</Value>
             <Label>Localhost</Label>
           </ParameterValue>
         </ParameterValues>

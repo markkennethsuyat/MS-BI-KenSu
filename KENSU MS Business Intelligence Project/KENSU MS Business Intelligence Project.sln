@@ -18,6 +18,9 @@ EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "SSDT DatabaseOLTP", "SSDT DatabaseOLTP\SSDT DatabaseOLTP.sqlproj", "{AC5A70C0-F170-44FF-91DC-1967ABBA78F1}"
 EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "SSDT DatawarehouseOLAP", "SSDT DatawarehouseOLAP\SSDT DatawarehouseOLAP.sqlproj", "{3B78B028-A5B3-4F48-980B-BA8D5EFF8DBE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7762C845-1207-4852-8472-60B860BE584D} = {7762C845-1207-4852-8472-60B860BE584D}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

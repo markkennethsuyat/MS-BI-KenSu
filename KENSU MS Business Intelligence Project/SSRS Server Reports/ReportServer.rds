@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<RptDataSource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="ReportServer">
-  <ConnectionProperties>
-    <Extension>SQL</Extension>
-    <ConnectString>Data Source=.;Initial Catalog=KENSUOnlineMusicStore</ConnectString>
-    <IntegratedSecurity>true</IntegratedSecurity>
-  </ConnectionProperties>
-  <DataSourceID>6ba02ca4-4d3f-43bd-83fc-44648ad3e4e4</DataSourceID>
-</RptDataSource>

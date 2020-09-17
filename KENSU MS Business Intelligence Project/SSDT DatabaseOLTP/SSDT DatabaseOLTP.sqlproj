@@ -238,4 +238,20 @@
     <Build Include="Sequences\Sequences\TransactionTypeID.sql" />
     <Build Include="Security\FilterCustomersBySalesTerritoryRole.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <ArtifactReference Include="$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\master.dacpac">
+      <HintPath>$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\130\SqlSchemas\master.dacpac</HintPath>
+      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
+      <DatabaseVariableLiteralValue>master</DatabaseVariableLiteralValue>
+    </ArtifactReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SSDT DatawarehouseOLAP\SSDT DatawarehouseOLAP.sqlproj">
+      <Name>SSDT DatawarehouseOLAP</Name>
+      <Project>{3b78b028-a5b3-4f48-980b-ba8d5eff8dbe}</Project>
+      <Private>True</Private>
+      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
+      <DatabaseVariableLiteralValue>KENSUOnlineMusicStoreDW</DatabaseVariableLiteralValue>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

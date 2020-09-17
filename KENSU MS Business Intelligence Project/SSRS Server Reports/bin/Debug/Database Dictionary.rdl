@@ -4,34 +4,25 @@
   <Author>Anthony Duguid</Author>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
-    <DataSource Name="Master">
+    <DataSource Name="KENSUDB">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=.;Initial Catalog=master</ConnectString>
+        <ConnectString>Data Source=localhost;Initial Catalog=KENSUOnlineMusicStore</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
       <rd:SecurityType>Integrated</rd:SecurityType>
-      <rd:DataSourceID>856aa19d-7b0a-4542-894d-3038cca76358</rd:DataSourceID>
-    </DataSource>
-    <DataSource Name="DynamicSource">
-      <ConnectionProperties>
-        <DataProvider>SQL</DataProvider>
-        <ConnectString>="data source=" &amp; Parameters!Server.Value &amp; ";initial catalog=" &amp; Parameters!Database.Value</ConnectString>
-        <IntegratedSecurity>true</IntegratedSecurity>
-      </ConnectionProperties>
-      <rd:SecurityType>Integrated</rd:SecurityType>
-      <rd:DataSourceID>ec4bdaec-4a71-487f-b355-6e7d976332df</rd:DataSourceID>
+      <rd:DataSourceID>1b608e10-d156-42f4-b0e0-64e968452380</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <DataSets>
     <DataSet Name="Details">
       <Query>
-        <DataSourceName>DynamicSource</DataSourceName>
+        <DataSourceName>KENSUDB</DataSourceName>
         <QueryParameters>
           <QueryParameter Name="@ObjectType">
             <Value>=Parameters!ObjectType.Value</Value>
           </QueryParameter>
-          <QueryParameter Name="@SearchType">
+          <QueryParameter Name="@searchType">
             <Value>=Parameters!SearchType.Value</Value>
           </QueryParameter>
           <QueryParameter Name="@SearchFor">
@@ -58,177 +49,8 @@
             <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>/*'---------------------------------------------------------------------------------------
-' Purpose:	    Search database objects
-' Notes:	    ="data source=" &amp; Parameters!p_Server.Value &amp; ";initial catalog=" &amp; Parameters!p_Database.Value 
-' Credinatials: assumes username has persmissions to read objects (default database master) needs sysadmin
-'-----------------------------------------------------------------------------------------
-
-DECLARE @SearchFor AS VARCHAR(50)
-DECLARE @ObjectType AS VARCHAR(50)
-DECLARE @SearchType AS VARCHAR(50)
-DECLARE @SchemaName AS VARCHAR(50)
-DECLARE @CreatedStart AS DATETIME
-DECLARE @CreatedEnd AS DATETIME
-DECLARE @ModifiedStart AS DATETIME
-DECLARE @ModifiedEnd AS DATETIME
-
-
-SET @ObjectType = '&lt;ALL&gt;' --'&lt;ALL&gt;'
-SET @SearchType = '&lt;ALL&gt;'
-SET @SearchFor = NULL
-SET @SchemaName = '&lt;ALL&gt;'
-SET @CreatedStart = NULL
-SET @CreatedEnd = NULL
-SET @ModifiedStart = NULL
-SET @ModifiedEnd = NULL
-
-*/
-
-
-;WITH
-object_type_desc
-AS
-(
-	SELECT tbl.* FROM (VALUES
-	  ( 'AF', 'Aggregate Function')
-	, ( 'C', 'Check Constraint')
-	, ( 'D', 'Default Constraint')
-	, ( 'F', 'Foreign Key Constraint')
-	, ( 'FN', 'Scalar Function')
-	, ( 'FS', 'Assembly (CLR) Scalar-Function')
-	, ( 'FT', 'Assembly (CLR) Table-Valued Function')
-	, ( 'IF', 'Inlined Table Function')
-	, ( 'IT', 'Parameter')
-	, ( 'K', 'Primary Key Constraint')
-	, ( 'L', 'Log')
-	, ( 'P', 'Stored Procedure')
-	, ( 'PC', 'Assembly (CLR) Stored-Procedure')
-	, ( 'PK', 'Primary Key')
-	, ( 'R', 'Rule')
-	, ( 'RF', 'Replication Filter Stored Procedure')
-	, ( 'S', 'System Table')
-	, ( 'SN', 'Synonym')
-	, ( 'SQ', 'Service Queue')
-	, ( 'TA', 'Assembly (CLR) DML trigger')
-	, ( 'TF', 'Table Function')
-	, ( 'TR', 'Trigger')
-	, ( 'TT', 'Table Type')
-	, ( 'U', 'User Created Table')
-	, ( 'UQ', 'Unique Key')
-	, ( 'V', 'View')
-	, ( 'X', 'Extended Stored Procedure')
-	) tbl ([ObjectType], [ObjectDescription]) 
-)
-,
-object_subtype_desc
-AS
-(
-	SELECT tbl.* FROM (VALUES
-	  ( 'AF', '')
-	, ( 'C', '')
-	, ( 'D', '')
-	, ( 'F', '')
-	, ( 'FN', 'Parameter Name')
-	, ( 'FS', '')
-	, ( 'FT', '')
-	, ( 'IT', 'Parameter Name')
-	, ( 'K', '')
-	, ( 'L', '')
-	, ( 'P', 'Parameter Name')
-	, ( 'PC', '')
-	, ( 'PK', '')
-	, ( 'R', '')
-	, ( 'RF', '')
-	, ( 'S', 'Column Name')
-	, ( 'SN', '')
-	, ( 'SQ', '')
-	, ( 'TA', '')
-	, ( 'TF', 'Parameter Name')
-	, ( 'TR', '')
-	, ( 'TT', '')
-	, ( 'U', 'Column Name')
-	, ( 'UQ', '')
-	, ( 'V', 'Column Name')
-	, ( 'X', '')
-	) tbl ([ObjectType], [ObjectDescription]) 
-)
-, 
-object_comments
-AS
-(
-	SELECT DISTINCT object_id = id, comments = CONVERT(VARCHAR(8000), text) FROM dbo.sysComments
-)
-,
-object_definitions
-AS
-(
-	SELECT object_id, definition FROM sys.sql_modules 
-)
-,
-object_properties
-AS
-(
-	SELECT major_id, minor_id, value FROM sys.extended_properties WHERE name = 'MS_Description'
-)
-SELECT 
-	  ServerName = @@SERVERNAME
-	, DatabaseName = DB_NAME()
-	, ObjectType = ot.ObjectDescription 
-	, SubObjectType = st.ObjectDescription 
-	, ob.Type 
-	, ObjectFullName = sc.name + '.' + ob.name 
-	, SchemaName = sc.name 
-	, ObjectName = ob.name 
-	, ObjectDescription = oex.value 
-	, ob.object_id 
-	, cl.column_id 
-	, ColumnName = cl.name 
-	, ColumnType = tp.name 
-	, ColumnDescription = cex.value 
-	, ColumnLength = 
-		CASE 
-			WHEN tp.name = 'nvarchar' AND cl.max_length = -1 THEN 'max'
-			WHEN tp.name = 'nvarchar' THEN CAST(cl.max_length/2 AS VARCHAR)
-			ELSE CAST(cl.max_length AS VARCHAR) 
-		END 
-	, ColumnOrder = cl.column_id 
-	, AllowNull = 
-		CASE cl.is_nullable 
-			WHEN 0 THEN 'N' 
-			WHEN 1 THEN 'Y' 
-		END 
-	, cm.comments 
-	, od.definition 
-	, ob.create_date
-	, ob.modify_date
-	, cl.max_length
-FROM 
-	sys.objects ob 
-	INNER JOIN sys.schemas sc ON sc.schema_id = ob.schema_id 
-	LEFT JOIN sys.columns cl ON ob.object_id = cl.object_id 
-	LEFT JOIN sys.types tp ON cl.user_type_id = tp.user_type_id 
-	LEFT JOIN object_type_desc ot ON ot.ObjectType = ob.Type 
-	LEFT JOIN object_subtype_desc st ON st.ObjectType = ob.Type 
- 	LEFT JOIN object_comments cm ON ob.object_id = cm.object_id 
- 	LEFT JOIN object_definitions od ON ob.object_id = od.object_id
- 	LEFT OUTER JOIN object_properties oex ON oex.major_id = cl.object_id AND oex.minor_id = 0 
- 	LEFT OUTER JOIN object_properties cex ON cex.major_id = cl.object_id AND cex.minor_id = cl.column_id 
-WHERE
-	1=1
-	AND ('&lt;ALL&gt;' IN(@ObjectType) OR ot.ObjectDescription IN(@ObjectType)) 
-	AND ('&lt;ALL&gt;' IN(@SchemaName) OR sc.name IN(@SchemaName))	
-	AND (@CreatedStart IS NULL OR ob.create_date &gt;= @CreatedStart)
-	AND (@CreatedEnd IS NULL OR ob.create_date &lt;= @CreatedEnd)
-	AND (@ModifiedStart IS NULL OR ob.modify_date &gt;= @ModifiedStart)
-	AND (@ModifiedEnd IS NULL OR ob.modify_date &lt;= @ModifiedEnd)	
-	AND 
-		(
-		((CASE WHEN '&lt;ALL&gt;' IN(@SearchType) OR 'Object Name' IN(@SearchType) THEN ob.name ELSE @SearchFor END LIKE '%' + @SearchFor + '%') 
-		OR (CASE WHEN '&lt;ALL&gt;' IN(@SearchType) OR 'Column Name' IN(@SearchType) THEN cl.name ELSE @SearchFor END LIKE '%' + @SearchFor + '%')
-		OR (CASE WHEN '&lt;ALL&gt;' IN(@SearchType) OR 'Definition' IN(@SearchType) THEN od.definition ELSE @SearchFor END LIKE '%' + @SearchFor + '%')) 
-		OR @SearchFor IS NULL
-		)</CommandText>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>Reports.GenerateDatabaseDictionaryDataset</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -242,6 +64,7 @@ WHERE
         </Field>
         <Field Name="ObjectType">
           <DataField>ObjectType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="SubObjectType">
           <DataField>SubObjectType</DataField>
@@ -249,6 +72,7 @@ WHERE
         </Field>
         <Field Name="Type">
           <DataField>Type</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="ObjectFullName">
           <DataField>ObjectFullName</DataField>
@@ -276,9 +100,11 @@ WHERE
         </Field>
         <Field Name="ColumnName">
           <DataField>ColumnName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="ColumnType">
           <DataField>ColumnType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="ColumnDescription">
           <DataField>ColumnDescription</DataField>
@@ -286,12 +112,15 @@ WHERE
         </Field>
         <Field Name="ColumnLength">
           <DataField>ColumnLength</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="ColumnOrder">
           <DataField>ColumnOrder</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="AllowNull">
           <DataField>AllowNull</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="comments">
           <DataField>comments</DataField>
@@ -309,11 +138,15 @@ WHERE
           <DataField>modify_date</DataField>
           <rd:UserDefined>true</rd:UserDefined>
         </Field>
+        <Field Name="max_length">
+          <DataField>max_length</DataField>
+          <rd:TypeName>System.Int16</rd:TypeName>
+        </Field>
       </Fields>
     </DataSet>
     <DataSet Name="Database">
       <Query>
-        <DataSourceName>Master</DataSourceName>
+        <DataSourceName>KENSUDB</DataSourceName>
         <CommandText>SELECT
 	Name
 FROM 
@@ -325,14 +158,14 @@ ORDER BY 1</CommandText>
       </Query>
       <Fields>
         <Field Name="name">
-          <DataField>name</DataField>
+          <DataField>Name</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
     <DataSet Name="ObjectType">
       <Query>
-        <DataSourceName>Master</DataSourceName>
+        <DataSourceName>KENSUDB</DataSourceName>
         <CommandText>SELECT tbl.* FROM (VALUES
   ( '&lt;ALL&gt;')
 , ( 'Aggregate Function')
@@ -361,18 +194,19 @@ ORDER BY 1</CommandText>
 , ( 'Unique Constraint')
 , ( 'User Created Table')
 , ( 'View')
-) tbl ([ObjectType]) </CommandText>
+) tbl ([ObjectType])</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
         <Field Name="ObjectType">
           <DataField>ObjectType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
     <DataSet Name="Schema">
       <Query>
-        <DataSourceName>DynamicSource</DataSourceName>
+        <DataSourceName>KENSUDB</DataSourceName>
         <CommandText>SELECT 
 	SchemaName = sc.name
 FROM 
@@ -1794,11 +1628,19 @@ SELECT '&lt;ALL&gt;'</CommandText>
       <DataType>String</DataType>
       <DefaultValue>
         <Values>
-          <Value>= "Localhost"</Value>
+          <Value>KENSU</Value>
         </Values>
       </DefaultValue>
       <AllowBlank>true</AllowBlank>
       <Prompt>Server</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>KENSU</Value>
+            <Label>Localhost</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
     </ReportParameter>
     <ReportParameter Name="CreatedStart">
       <DataType>DateTime</DataType>

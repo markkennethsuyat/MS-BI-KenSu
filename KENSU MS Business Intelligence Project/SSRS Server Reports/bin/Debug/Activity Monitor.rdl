@@ -4,105 +4,40 @@
   <Author>Anthony Duguid</Author>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
-    <DataSource Name="Master">
-      <Transaction>true</Transaction>
+    <DataSource Name="KENSUDB">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=.;Initial Catalog=master</ConnectString>
+        <ConnectString>Data Source=localhost;Initial Catalog=KENSUOnlineMusicStore</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
       <rd:SecurityType>Integrated</rd:SecurityType>
-      <rd:DataSourceID>856aa19d-7b0a-4542-894d-3038cca76358</rd:DataSourceID>
-    </DataSource>
-    <DataSource Name="DynamicSource">
-      <ConnectionProperties>
-        <DataProvider>SQL</DataProvider>
-        <ConnectString>="data source=" &amp; Parameters!Server.Value &amp; ";initial catalog=" &amp; Parameters!Database.Value</ConnectString>
-        <IntegratedSecurity>true</IntegratedSecurity>
-      </ConnectionProperties>
-      <rd:SecurityType>Integrated</rd:SecurityType>
-      <rd:DataSourceID>ec4bdaec-4a71-487f-b355-6e7d976332df</rd:DataSourceID>
+      <rd:DataSourceID>5bcc3bf6-e869-4c24-a0b7-7a111410d9ce</rd:DataSourceID>
     </DataSource>
   </DataSources>
   <DataSets>
     <DataSet Name="Details">
       <Query>
-        <DataSourceName>Master</DataSourceName>
+        <DataSourceName>KENSUDB</DataSourceName>
         <QueryParameters>
           <QueryParameter Name="@GroupedBy">
             <Value>=Parameters!GroupedBy.Value</Value>
             <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
+          <QueryParameter Name="@Server">
+            <Value>=Parameters!Server.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@Database">
+            <Value>=Parameters!Database.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@LanId">
+            <Value>=Parameters!LanId.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@ProcessId">
+            <Value>=Parameters!ProcessId.Value</Value>
+          </QueryParameter>
         </QueryParameters>
-        <CommandText>/*'---------------------------------------------------------------------------------------
-' Purpose:	check processes on the server
-'-----------------------------------------------------------------------------------------
-
-DECLARE @GroupedBy AS varchar(20)
-DECLARE @Server AS varchar(20)
-DECLARE @Database AS varchar(20)
-DECLARE @LanId AS varchar(50)
-DECLARE @ProcessID AS int
-
-SET @GroupedBy = '&lt;ALL&gt;'
-SET @Server = 'YourServerNameHere'
-SET @Database = 'DB1'
-SET @LanId = NULL
-SET @ProcessID = NULL
-
-*/
-
-;WITH 
-connected_users
-AS
-(
-	SELECT        
-		  ServerName = ServerProperty('ServerName')  
-		, DatabaseName = DB_NAME(prc.dbid)  
-		, LanId = SUBSTRING(prc.loginame, CHARINDEX('\', prc.loginame) + 1, LEN(prc.loginame) - CHARINDEX('\', prc.loginame))   
-		, HostName = prc.hostname
-		, OpenTransactions = prc.open_tran
-		, ProcessIdBlocked = prc.blocked
-		, ProcessStatus = prc.status
-		, ProcessID = prc.spid
-		, prc.login_time
-		, prc.last_batch
-		, prc.program_name
-		, prc.cmd
-	FROM 
-	master.dbo.sysprocesses AS prc WITH (NOLOCK) 
-)
-
-SELECT 
-	  cu.ServerName
-	, cu.DatabaseName
-	, cu.LanId
-	, cu.HostName
-	, cu.OpenTransactions
-	, cu.ProcessIdBlocked
-	, cu.ProcessStatus
-	, cu.ProcessID
-	, cu.login_time
-	, cu.last_batch
-	, cu.program_name
-	, cu.cmd
-	, GroupedBy = 
-		CASE 
-			WHEN @GroupedBy = 'DatabaseName' THEN cu.DatabaseName
-			WHEN @GroupedBy = 'LanId' THEN cu.LanId
-			WHEN @GroupedBy = 'HostName' THEN cu.HostName
-			WHEN @GroupedBy = 'OpenTransactions' THEN CAST(cu.OpenTransactions AS VARCHAR)
-			WHEN @GroupedBy = 'ProcessIdBlocked' THEN CAST(cu.ProcessIdBlocked AS VARCHAR)
-			WHEN @GroupedBy = 'ProcessStatus' THEN cu.ProcessStatus
-			ELSE '&lt;ALL&gt;' 
-		END 
-FROM 
-	connected_users cu
-WHERE
-	1=1
-	AND ('&lt;ALL&gt;' IN(@Database) OR cu.DatabaseName IN(@Database))
-	AND ('&lt;ALL&gt;' IN(@LanId) OR cu.DatabaseName IN(@LanId))
-	AND (@ProcessID IS NULL OR cu.ProcessID = @ProcessID)</CommandText>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>Reports.GenerateActivityMonitorDataset</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -162,7 +97,7 @@ WHERE
     </DataSet>
     <DataSet Name="Database">
       <Query>
-        <DataSourceName>Master</DataSourceName>
+        <DataSourceName>KENSUDB</DataSourceName>
         <CommandText>SELECT
 	Name
 FROM 
@@ -175,23 +110,6 @@ ORDER BY 1</CommandText>
       <Fields>
         <Field Name="name">
           <DataField>Name</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
-    <DataSet Name="LanId">
-      <Query>
-        <DataSourceName>Master</DataSourceName>
-        <CommandText>SELECT DISTINCT SUBSTRING(loginame, CHARINDEX('\', loginame) + 1, LEN(loginame) - CHARINDEX('\', loginame))  AS [LanId]
-FROM master.dbo.sysprocesses
-UNION
-	SELECT '&lt;ALL&gt;'
-ORDER BY 1</CommandText>
-        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
-      </Query>
-      <Fields>
-        <Field Name="LanId">
-          <DataField>LanId</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
@@ -1519,15 +1437,15 @@ ORDER BY 1</CommandText>
       <DataType>String</DataType>
       <DefaultValue>
         <Values>
-          <Value>="localhost"</Value>
+          <Value>KENSU</Value>
         </Values>
       </DefaultValue>
       <Prompt>Server</Prompt>
       <ValidValues>
         <ParameterValues>
           <ParameterValue>
-            <Value>="localhost"</Value>
-            <Label>Local Host</Label>
+            <Value>KENSU</Value>
+            <Label>Localhost</Label>
           </ParameterValue>
         </ParameterValues>
       </ValidValues>
@@ -1573,20 +1491,13 @@ ORDER BY 1</CommandText>
     </ReportParameter>
     <ReportParameter Name="LanId">
       <DataType>String</DataType>
+      <Nullable>true</Nullable>
       <DefaultValue>
         <Values>
-          <Value>&lt;ALL&gt;</Value>
+          <Value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true" />
         </Values>
       </DefaultValue>
       <Prompt>Lan Id</Prompt>
-      <ValidValues>
-        <DataSetReference>
-          <DataSetName>LanId</DataSetName>
-          <ValueField>LanId</ValueField>
-          <LabelField>LanId</LabelField>
-        </DataSetReference>
-      </ValidValues>
-      <MultiValue>true</MultiValue>
     </ReportParameter>
     <ReportParameter Name="ProcessId">
       <DataType>String</DataType>
